@@ -1,10 +1,118 @@
 <!DOCTYPE html>
-<head>
-</head>
-<body>
-    <div id="container"></div>
-    <div id="accidents"></div>
 
-    <script type="module" src="js/script.js">
-    </script>
+<head>
+    <link rel="stylesheet" href="styles/styles.css">
+
+    <script src="https://unpkg.com/topojson@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://unpkg.com/d3-array@1"></script>
+    <script src="https://unpkg.com/d3-collection@1"></script>
+    <script src="https://unpkg.com/d3-path@1"></script>
+    <script src="https://unpkg.com/d3-shape@1"></script>
+    <script src="https://unpkg.com/d3-sankey@0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
+</head>
+
+<body>
+    <div id="tab_buttons">
+        <button id="dot_density_btn" onclick="openTab(event, 'dot_density')">Densidad de Puntos</button>
+        <button id="aluvial_btn" onclick="openTab(event, 'aluvial')">Aluvial</button>
+        <button id="violin_btn" onclick="openTab(event, 'violin')">Violín</button>
+    </div>
+
+    <div id="dot_density" class="tab_content">
+        <h1>Accidentes de tráfico con una o más fatalidades en 2021</h1>
+        <div class="tab_content_body">
+            <div>
+                <div id="map_container"></div>
+                <p class="source">Datos de accidentes del <a
+                        href="https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars">Fatality
+                        Analysis
+                        Reporting System</a> para el año <a
+                        href="https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/FARS/2021/National/">2021</a>.</p>
+                <p class="source">Datos de censo del <a href="https://www.census.gov/">United States Census Bureau</a>
+                    para
+                    el
+                    año <a
+                        href="https://www.census.gov/data/tables/time-series/demo/popest/2020s-national-total.html">2021</a>.
+                </p>
+                <p class="source">Gráfico de elaboración propia.</p>
+            </div>
+            <div>
+                <input id="relative" type="checkbox">
+                <span>Datos relativos a población</span>
+                <div id="rel_div" style="display:none">
+                    <input id="rel_value" type="range" value="100000" min="500000" max="1000000" step="50000">
+                    <p>Accidentes por cada <code id="rel_value_val"></code> habitantes</p>
+                </div>
+                <div id="abs_dib">
+                    <input id="dot_value" type="range" value="10" min="5" max="30" step="1">
+                    <p>Cada punto representa <code id="dot_value_val"></code> accidentes</p>
+                </div>
+                <p class="note">*Los puntos se vuelven <span>rojos</span> si no hay espacio para dibujarlos todos</p>
+                <div id="map_controls" class="controls">
+                    <p>Controles</p>
+                    <input id="dist" type="range" value="0.07" min="0.01" max="2" step="0.01">
+                    <span>Distancia entre puntos: <code id="dist_val"></code></span>
+                    <br />
+                    <input id="edge_dist" type="range" value="0.15" min="0.01" max="2" step="0.01">
+                    <span>Distancia de punto a frontera: <code id="edge_dist_val"></code></span>
+                    <br />
+                    <input id="scale" type="range" value="800" min="100" max="1500" step="50">
+                    <span>Escala del mapa: <code id="scale_val"></code></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="aluvial" class="tab_content">
+        <h1>Relación entre género, experiencia y nivel salarial</h1>
+        <div class="tab_content_body">
+            <div>
+                <div id="alluvial_container">
+                    <img src="./res/alluvial.png" width="700px" height="auto">
+                </div>
+                <p class="source">Datos de empleados de <a
+                        href="https://www.kaggle.com/datasets/tawfikelmetwally/employee-dataset">Kaggle</a>.
+                </p>
+                <p class="source">Gráfico de elaboración propia.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="violin" class="tab_content">
+        <h1>Distribución de primas de seguros médicos por edad</h1>
+        <div class="tab_content_body">
+            <div>
+                <div id="violin_container"></div>
+                <p class="source">Datos de pólizas de seguros médicos de <a
+                        href="https://www.kaggle.com/datasets/mirichoi0218/insurance">Kaggle</a>.</p>
+                <p class="source">Gráfico de elaboración propia.</p>
+            </div>
+            <div>
+                <p>Añadir separación</p>
+                <input id="separator" type="range" value="30" min="18" max="64" step="1">
+                <p>
+                    <input id="separator_val" type="number" size="4"></input>
+                    años
+                    <button id="add_separator_btn">+</button>
+                </p>
+                <ul id="separator_list">
+                    <li value="18"><code>18</code><button>-</button></li>
+                    <li value="25"><code>25</code><button>-</button></li>
+                    <li value="35"><code>35</code><button>-</button></li>
+                    <li value="55"><code>55</code><button>-</button></li>
+                </ul>
+                <div id="violin_controls" class="controls">
+                    <br />
+                    <input id="bins" type="range" value="30" min="5" max="60" step="1">
+                    <span>Nº intervalos: <code id="bins_val"></code></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script type="module" src="js/map_script.js"></script>
+    <script type="module" src="js/violin_script.js"></script>
 </body>

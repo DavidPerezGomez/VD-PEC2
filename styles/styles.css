@@ -1,0 +1,113 @@
+* {
+    background-color: #e9e5cd;
+}
+
+input[type=range] {
+    vertical-align: middle;
+
+}
+
+input[type="range"]::-moz-range-progress {
+    background-color: #75410d;
+}
+
+input[type="range"]::-moz-range-track {
+    background-color: #999;
+}
+
+input[type="number"] {
+    background-color: #bbb;
+}
+
+h1 {
+    margin: 0;
+}
+
+code {
+    border-radius: 20%;
+    background-color: #bbb;
+    padding: 5px;
+}
+
+p {
+    margin: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+.tab_content {
+    display: none;
+}
+
+.tab_content.visible {
+    display: block;
+}
+
+.tab_content_body {
+    display: flex;
+    flex-direction: row;
+}
+
+.source {
+    margin: 0;
+    font-size: small;
+}
+
+.note {
+    margin: 0;
+    margin-top: 10px;
+    font-size: small;
+}
+
+.note span {
+    color: #8c1211;
+}
+
+.controls {
+    display: none;
+}
+
+#tab_buttons button {
+    background-color: inherit;
+    border-color: #553b08;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+}
+
+#tab_buttons button:hover {
+    background-color: #75410d;
+}
+
+#tab_buttons button.active {
+    background-color: #b96916;
+}
+
+#separator_list button {
+    height: 15px;
+    width: 15px;
+    margin-left: 5px;
+    background-color: inherit;
+    border-radius: 25%;
+    border-color: red;
+    border-width: 1px;
+    color: red;
+    cursor: pointer;
+    line-height: 5px;
+}
+
+#add_separator_btn {
+    height: 20px;
+    width: 20px;
+    background-color: inherit;
+    border-radius: 25%;
+    border-color: green;
+    border-width: 1px;
+    color: green;
+    cursor: pointer;
+    text-align: center;
+    line-height: 5px;
+}
