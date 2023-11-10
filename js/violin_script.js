@@ -1,5 +1,5 @@
 import { ViolinHandler } from "./violin_handler.js";
-import { categorize } from "./violin_utils.js";
+import { categorizeAge } from "./violin_utils.js";
 
 function updateSeparator() {
     separator.value = separator_val.value
@@ -75,7 +75,18 @@ bins.oninput = () => {
 updateSeparatorVal();
 updateBinsVal();
 
-const data = await d3.csv("res/insurance.csv", d3.autoType);
+const data = await d3.csv("res/Salary_Data.csv", d3.autoType);
+
+let xCol = "Years of Experience";
+let yCol = "Salary";
+
+const cleanData = data.filter(d => d[xCol] != null && d[yCol] != null);
+
+let xData = cleanData.map(d => d[xCol]);
+separator.min = Math.min(...xData);
+separator.max = Math.max(...xData);
+separator.value = xData[Math.floor(xData.legnth/2)];
+separator_val.value = separator.value;
 
 const options = {
     chartWidth: 800,
@@ -89,11 +100,11 @@ const options = {
 
 const violinHandler = new ViolinHandler()
     .container(violin_container)
-    .data(data)
+    .data(cleanData)
     .options(options)
-    .columnX("age")
-    .columnY("charges")
-    .xCategorizer(categorize)
+    .columnX(xCol)
+    .columnY(yCol)
+    .xCategorizer(categorizeAge)
     .createGraph();
 
 function updateGraph() {

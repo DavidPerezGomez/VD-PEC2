@@ -1,5 +1,4 @@
 import {
-    categorize,
     asc,
     sum,
     mean,
@@ -104,8 +103,7 @@ class ViolinHandler {
 
         // y scale
         this._y = d3.scaleLinear()
-            // .domain([minY, maxY])
-            .domain([0, maxY])
+            .domain([minY, maxY])
             .range([height, 0]);
         this._svg.select("g").append("g")
             .call(d3.axisLeft(this._y));
@@ -117,15 +115,15 @@ class ViolinHandler {
             .attr("x", (this._options.chartWidth - this._margin.left - this._margin.right) / 2)
             .attr("y", this._options.chartHeight - this._margin.top - this._margin.bottom / 4)
             .attr("class", "x_label")
-            .text("Edad (años)");
+            .text("Años de Experiencia");
 
         this._svg.select("g")
             .append("text")
             .attr("text-anchor", "end")
-            .attr("x", -this._margin.left / 2)
+            .attr("x", -this._margin.left * 0.4)
             .attr("y", (this._options.chartHeight - this._margin.top - this._margin.bottom) / 2)
             .attr("class", "y_label")
-            .text("Prima ($)");
+            .text("Salario ($)");
 
         return this;
     }
@@ -137,10 +135,15 @@ class ViolinHandler {
         let dataX = this._data.map(d => this.categorize(d[this._columnX]));
         let labelsX = [...new Set(dataX)];
         labelsX.sort((l1, l2) => {
-            let regex = /\d+/;
-            let v1 = regex.exec(l1)[0];
-            let v2 = regex.exec(l2)[0];
-            return v1 - v2;
+            let regex = /\d+/g;
+            let v1 = Math.max(...l1.match(regex));
+            let v2 = Math.max(...l2.match(regex));
+
+            if (v1 == v2) {
+                return l1[0].localeCompare(l2[0]);
+            } else {
+                return v1 - v2;
+            }
         });
 
         // x scale
@@ -201,23 +204,27 @@ class ViolinHandler {
                 .x0(d => xNum(-d.length))
                 .x1(d => xNum(d.length))
                 .y(d => this._y(d.x0))
-                // .curve(d3.curveStep)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
-                .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
+                .curve(d3.curveCatmullRom)   // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
+                // .curve(d3.curveStep)
             );
 
+        const boxWidth = 10;
+
+        // Q1 to Q3 box
         g.append("rect")
-            .attr("width", 10)
+            .attr("width", boxWidth)
             .attr("height", d => {
                 let flat = asc(d.value.flat());
                 let q1 = q25(flat);
                 let q3 = q75(flat);
                 return this._y(q1) - this._y(q3);
             })
-            .attr("x", xNum(0) - 5)
+            .attr("x", xNum(0) - boxWidth / 2)
             .attr("y", d => this._y(q75(d.value.flat())))
             .attr("stroke", this._options.markerColor)
             .attr("fill", "#00000000");
 
+        // Q3 to Q3+1.5*IQR line
         g.append("line")
             .attr("x1", xNum(0))
             .attr("y1", d => this._y(q75(d.value.flat())))
@@ -231,43 +238,69 @@ class ViolinHandler {
             })
             .attr("stroke", this._options.markerColor)
 
-            g.append("line")
-                .attr("x1", xNum(0))
-                .attr("y1", d => this._y(q25(d.value.flat())))
-                .attr("x2", xNum(0))
-                .attr("y2", d => {
-                    let flat = asc(d.value.flat());
-                    let q1 = q25(flat);
-                    let q3 = q75(flat);
-                    let iqr = q3 - q1;
-                    return this._y(Math.max(q1 - 1.5 * iqr, flat[0]));
-                })
-                .attr("stroke", this._options.markerColor)
-
+        // Q3+1.5*IQR line
         g.append("line")
-            .attr("x1", xNum(0) - 5)
+            .attr("x1", xNum(0) - boxWidth / 2)
+            .attr("y1", d => {
+                let flat = asc(d.value.flat());
+                let q1 = q25(flat);
+                let q3 = q75(flat);
+                let iqr = q3 - q1;
+                return this._y(Math.min(q3 + 1.5 * iqr, flat[flat.length - 1]));
+            })
+            .attr("x2", xNum(0) + boxWidth / 2)
+            .attr("y2", d => {
+                let flat = asc(d.value.flat());
+                let q1 = q25(flat);
+                let q3 = q75(flat);
+                let iqr = q3 - q1;
+                return this._y(Math.min(q3 + 1.5 * iqr, flat[flat.length - 1]));
+            })
+            .attr("stroke", this._options.markerColor)
+
+        // Q1 to Q1-1.5*IQR line
+        g.append("line")
+            .attr("x1", xNum(0))
+            .attr("y1", d => this._y(q25(d.value.flat())))
+            .attr("x2", xNum(0))
+            .attr("y2", d => {
+                let flat = asc(d.value.flat());
+                let q1 = q25(flat);
+                let q3 = q75(flat);
+                let iqr = q3 - q1;
+                return this._y(Math.max(q1 - 1.5 * iqr, flat[0]));
+            })
+            .attr("stroke", this._options.markerColor)
+
+        // Q1-1.5*IQR line
+        g.append("line")
+            .attr("x1", xNum(0) - boxWidth / 2)
+            .attr("y1", d => {
+                let flat = asc(d.value.flat());
+                let q1 = q25(flat);
+                let q3 = q75(flat);
+                let iqr = q3 - q1;
+                return this._y(Math.max(q1 - 1.5 * iqr, flat[0]));
+            })
+            .attr("x2", xNum(0) + boxWidth / 2)
+            .attr("y2", d => {
+                let flat = asc(d.value.flat());
+                let q1 = q25(flat);
+                let q3 = q75(flat);
+                let iqr = q3 - q1;
+                return this._y(Math.max(q1 - 1.5 * iqr, flat[0]));
+            })
+            .attr("stroke", this._options.markerColor)
+
+        // Median line
+        g.append("line")
+            .attr("x1", xNum(0) - boxWidth / 2)
             .attr("y1", d => this._y(median(d.value.flat())))
-            .attr("x2", xNum(0) + 5)
+            .attr("x2", xNum(0) + boxWidth / 2)
             .attr("y2", d => this._y(median(d.value.flat())))
             .attr("stroke", this._options.markerColor)
 
-        // .append("g")
-        // .attr("transform", d => "translate(" + x(d.key) + " ,0)") // Translation on the right to be at the group position
-        // .append("path")
-        // .datum(d => (d.value))     // So now we are working bin per bin
-        // .style("stroke", this._options.stokeColor)
-        // .style("fill", this._options.fillColor)
-        // .attr("d", d3.area()
-        //     .x0(d => xNum(-d.length))
-        //     .x1(d => xNum(d.length))
-        //     .y(d => this._y(d.x0))
-        //     .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
-        // );
-
-        // this._svg.select("#violins")
-
         return this;
-
     }
 
     updateGraph() {

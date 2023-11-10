@@ -1,4 +1,4 @@
-function categorize(d) {
+function categorizeAge(d) {
     let separators = Array.from(d3.selectAll("li"))
         .map(li => li.value);
     if (!separators.length) return "All";
@@ -55,7 +55,7 @@ const q75 = arr => quantile(arr, .75);
 const median = arr => q50(arr);
 
 export {
-    categorize,
+    categorizeAge,
     asc,
     sum,
     mean,
