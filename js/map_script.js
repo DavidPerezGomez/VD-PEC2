@@ -67,7 +67,7 @@ updateDistVal();
 updateEdgeDistVal();
 updateScaleVal();
 
-const accidents = await d3.csv("./res/accident2021.csv");
+const accidents = await d3.csv("./res/accident2021.csv", d3.autoType);
 const accidentCount = accidents.reduce(
     (acc, item) => {
         let state = item["STATENAME"].toUpperCase();
@@ -78,7 +78,7 @@ const accidentCount = accidents.reduce(
     {}
 );
 
-const census = await d3.csv("./res/NST-EST2022-ALLDATA.csv");
+const census = await d3.csv("./res/NST-EST2022-ALLDATA.csv", d3.autoType);
 const census2021 = {};
 census.forEach((c) => {
     let state = c["NAME"].toUpperCase();

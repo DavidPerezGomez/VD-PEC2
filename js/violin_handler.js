@@ -1,3 +1,16 @@
+import {
+    categorize,
+    asc,
+    sum,
+    mean,
+    std,
+    quantile,
+    q25,
+    q50,
+    q75,
+    median
+} from "./violin_utils.js";
+
 class ViolinHandler {
 
     constructor() {
@@ -7,6 +20,7 @@ class ViolinHandler {
             backgroundColor: "#EAF2FA",
             fillColor: "#09A573",
             stokeColor: "#09A573",
+            markerColor: "#000000",
             nBins: 10
         };
         this._container;
@@ -90,7 +104,8 @@ class ViolinHandler {
 
         // y scale
         this._y = d3.scaleLinear()
-            .domain([minY, maxY])
+            // .domain([minY, maxY])
+            .domain([0, maxY])
             .range([height, 0]);
         this._svg.select("g").append("g")
             .call(d3.axisLeft(this._y));
@@ -169,24 +184,87 @@ class ViolinHandler {
             .domain([-maxNum, maxNum]);
 
         // Add the shape to this svg!
-        this._svg.select("g")
+        let g = this._svg.select("g")
             .append("g")
             .attr("id", "violins")
             .selectAll(null)
             .data(sumstat)
             .enter()        // So now we are working group per group
             .append("g")
-            .attr("transform", d => "translate(" + x(d.key) + " ,0)") // Translation on the right to be at the group position
-            .append("path")
-            .datum(d => (d.value))     // So now we are working bin per bin
+            .attr("transform", d => "translate(" + x(d.key) + ", 0)"); // Translation on the right to be at the group position
+
+        g.append("path")
+            .datum(d => d.value)     // So now we are working bin per bin
             .style("stroke", this._options.stokeColor)
             .style("fill", this._options.fillColor)
             .attr("d", d3.area()
                 .x0(d => xNum(-d.length))
                 .x1(d => xNum(d.length))
                 .y(d => this._y(d.x0))
+                // .curve(d3.curveStep)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
                 .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
             );
+
+        g.append("rect")
+            .attr("width", 10)
+            .attr("height", d => {
+                let flat = asc(d.value.flat());
+                let q1 = q25(flat);
+                let q3 = q75(flat);
+                return this._y(q1) - this._y(q3);
+            })
+            .attr("x", xNum(0) - 5)
+            .attr("y", d => this._y(q75(d.value.flat())))
+            .attr("stroke", this._options.markerColor)
+            .attr("fill", "#00000000");
+
+        g.append("line")
+            .attr("x1", xNum(0))
+            .attr("y1", d => this._y(q75(d.value.flat())))
+            .attr("x2", xNum(0))
+            .attr("y2", d => {
+                let flat = asc(d.value.flat());
+                let q1 = q25(flat);
+                let q3 = q75(flat);
+                let iqr = q3 - q1;
+                return this._y(Math.min(q3 + 1.5 * iqr, flat[flat.length - 1]));
+            })
+            .attr("stroke", this._options.markerColor)
+
+            g.append("line")
+                .attr("x1", xNum(0))
+                .attr("y1", d => this._y(q25(d.value.flat())))
+                .attr("x2", xNum(0))
+                .attr("y2", d => {
+                    let flat = asc(d.value.flat());
+                    let q1 = q25(flat);
+                    let q3 = q75(flat);
+                    let iqr = q3 - q1;
+                    return this._y(Math.max(q1 - 1.5 * iqr, flat[0]));
+                })
+                .attr("stroke", this._options.markerColor)
+
+        g.append("line")
+            .attr("x1", xNum(0) - 5)
+            .attr("y1", d => this._y(median(d.value.flat())))
+            .attr("x2", xNum(0) + 5)
+            .attr("y2", d => this._y(median(d.value.flat())))
+            .attr("stroke", this._options.markerColor)
+
+        // .append("g")
+        // .attr("transform", d => "translate(" + x(d.key) + " ,0)") // Translation on the right to be at the group position
+        // .append("path")
+        // .datum(d => (d.value))     // So now we are working bin per bin
+        // .style("stroke", this._options.stokeColor)
+        // .style("fill", this._options.fillColor)
+        // .attr("d", d3.area()
+        //     .x0(d => xNum(-d.length))
+        //     .x1(d => xNum(d.length))
+        //     .y(d => this._y(d.x0))
+        //     .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
+        // );
+
+        // this._svg.select("#violins")
 
         return this;
 

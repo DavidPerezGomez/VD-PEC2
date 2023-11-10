@@ -75,7 +75,7 @@ bins.oninput = () => {
 updateSeparatorVal();
 updateBinsVal();
 
-const data = await d3.csv("res/insurance.csv");
+const data = await d3.csv("res/insurance.csv", d3.autoType);
 
 const options = {
     chartWidth: 800,
@@ -83,6 +83,7 @@ const options = {
     backgroundColor: "#e9e5cd",
     fillColor: "#b96916",
     stokeColor: "#311b06",
+    markerColor: "#061b31",
     nBins: bins.value
 };
 
