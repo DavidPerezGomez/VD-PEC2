@@ -201,6 +201,7 @@ class ViolinHandler {
             .style("stroke", this._options.stokeColor)
             .style("fill", this._options.fillColor)
             .attr("d", d3.area()
+                .defined(d => d.length > 0)
                 .x0(d => xNum(-d.length))
                 .x1(d => xNum(d.length))
                 .y(d => this._y(d.x0))
